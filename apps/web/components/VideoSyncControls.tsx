@@ -6,7 +6,7 @@ import { Play, Pause, FastForward, Rewind, Link as LinkIcon } from "lucide-react
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from 'next/dynamic';
 
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as any;
 
 export function VideoSyncControls({ roomId, isHost }: { roomId: string, isHost: boolean }) {
     const [countdown, setCountdown] = useState<number | null>(null);
