@@ -1,0 +1,19 @@
+{
+    "name": "netmirror-party",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "concurrently \"npm run dev --workspace=@netmirror/shared\" \"npm run dev --workspace=@netmirror/web\" \"npm run dev --workspace=@netmirror/server\"",
+        "build": "npm run build --workspaces",
+        "start": "npm run start --workspaces"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.0",
+        "typescript": "^5.0.0",
+        "@types/node": "^20.0.0"
+    }
+}
