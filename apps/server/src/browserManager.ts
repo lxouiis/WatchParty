@@ -19,9 +19,9 @@ export class BrowserManager {
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
                     '--disable-dev-shm-usage',
-                    '--window-size=1280,720',
+                    '--window-size=1024,576',
                 ],
-                defaultViewport: { width: 1280, height: 720 }
+                defaultViewport: { width: 1024, height: 576 }
             });
             console.log("Browser launched successfully.");
 
@@ -43,7 +43,7 @@ export class BrowserManager {
         if (!this.page) return null;
         try {
             // Take screenshot as binary buffer (jpeg is faster)
-            return await this.page.screenshot({ type: 'jpeg', quality: 70, encoding: 'binary' }) as Buffer;
+            return await this.page.screenshot({ type: 'jpeg', quality: 50, encoding: 'binary' }) as Buffer;
         } catch (e) {
             console.error("Screenshot failed", e);
             return null;
