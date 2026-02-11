@@ -21,19 +21,20 @@ export function setupSocket(io: Server) {
 
     // Initialize browser (singleton for MVP)
     console.log("Starting Browser Manager...");
-    browserManager.init().then(() => console.log("Browser Manager initialized."));
+    browserManager.init().then(async () => {
+        console.log("Browser Manager initialized. Starting screencast...");
 
-    let frameCount = 0;
-    // Streaming loop (simple MJPEG via socket)
-    setInterval(async () => {
-        const buffer = await browserManager.getScreenshotBuffer();
-        if (buffer) {
-            if (++frameCount % 50 === 0) console.log(`Broadcasting frame ${frameCount}, size: ${buffer.byteLength}`);
-            party.emit(Events.Server.BROWSER_SCREENSHOT, buffer);
-        } else {
-            if (++frameCount % 50 === 0) console.log(`Frame ${frameCount}: No buffer available`);
-        }
-    }, 100); // 10 FPS
+        // Start high-performance CDP screencast
+        let frameCount = 0;
+        await browserManager.startScreencast((buffer) => {
+            if (++frameCount % 100 === 0) console.log(`Broadcasting frame ${frameCount}, size: ${buffer.byteLength}`);
+            // Use volatile emit for video frames to drop them if network is congested
+            party.volatile.emit(Events.Server.BROWSER_SCREENSHOT, buffer);
+        });
+    });
+
+    // Removed old polling loop
+    // setInterval(...)
 
     party.on("connection", (socket: Socket) => {
         // Basic auth/identify could go here (using handshake query)

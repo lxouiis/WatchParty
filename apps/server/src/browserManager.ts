@@ -39,15 +39,48 @@ export class BrowserManager {
         }
     }
 
-    async getScreenshotBuffer(): Promise<Buffer | null> {
-        if (!this.page) return null;
+    async startScreencast(callback: (buffer: Buffer) => void) {
+        if (!this.page) return;
+
         try {
-            // Take screenshot as binary buffer (jpeg is faster)
-            return await this.page.screenshot({ type: 'jpeg', quality: 50, encoding: 'binary' }) as Buffer;
+            const client = await this.page.createCDPSession();
+
+            await client.send('Page.startScreencast', {
+                format: 'jpeg',
+                quality: 60,
+                maxWidth: 1024,
+                maxHeight: 576,
+                everyNthFrame: 1
+            });
+
+            client.on('Page.screencastFrame', async (frame) => {
+                const { data, sessionId } = frame;
+                try {
+                    await client.send('Page.screencastFrameAck', { sessionId });
+                    const buffer = Buffer.from(data, 'base64');
+                    callback(buffer);
+                } catch (e) {
+                    console.error("Frame ack failed", e);
+                }
+            });
+
+            console.log("CDP Screencast started.");
         } catch (e) {
-            console.error("Screenshot failed", e);
-            return null;
+            console.error("Failed to start screencast", e);
         }
+    }
+
+    async stopScreencast() {
+        if (!this.page) return;
+        try {
+            const client = await this.page.createCDPSession();
+            await client.send('Page.stopScreencast');
+        } catch (e) { }
+    }
+
+    // Deprecated: Old polling method (kept for fallback if needed, but unused)
+    async getScreenshotBuffer(): Promise<Buffer | null> {
+        return null;
     }
 
     async navigate(url: string) {
@@ -61,7 +94,6 @@ export class BrowserManager {
 
     async handleInput(type: string, data: any) {
         if (!this.page) return;
-
         try {
             switch (type) {
                 case 'mousemove':
@@ -95,6 +127,7 @@ export class BrowserManager {
     }
 
     async close() {
+        await this.stopScreencast();
         if (this.browser) {
             await this.browser.close();
             this.browser = null;
