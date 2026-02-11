@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
-const URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:4000/party";
+const SERVER_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:4000";
+const URL = `${SERVER_URL}/party`;
 
 export const socket: Socket = io(URL, {
     autoConnect: false,
